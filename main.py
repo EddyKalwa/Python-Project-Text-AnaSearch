@@ -1,4 +1,3 @@
-# main.py
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
@@ -6,8 +5,6 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 from modules.pretraitement.traitement import read_text_files_from_folder, manage_document_collection
 from modules.analyse_frequence.analyse import analyse_frequence_globale
 from modules.indexation.index import creer_index, recherche_mot, recherche_mot_dans_contenu
-from modules.moteur_recherche.moteur import search
-
 
 def afficher_frequences(freqs, top_n=20):
     print(f"\n[INFO] Top {top_n} mots les plus fréquents :")
@@ -18,7 +15,7 @@ def afficher_frequences(freqs, top_n=20):
 def afficher_resultats_recherche_docs(resultats):
     if resultats:
         print("\n[INFO] Documents contenant le mot clé :")
-        for doc in resultats:
+        for doc in resultats.keys():
             print(f" - {doc}")
     else:
         print("\n[INFO] Aucun document ne contient ce mot clé.")
@@ -42,13 +39,13 @@ def main():
         print("[ERREUR] Aucun document chargé, arrêt du programme.")
         return
     
-    documents_tokens = manage_document_collection(documents_raw)
+    documents_tokens, documents_lines = manage_document_collection(documents_raw)
     
     # Analyse fréquence globale
     freqs = analyse_frequence_globale(documents_tokens)
     afficher_frequences(freqs, top_n=20)
     
-    # Création de l'index inversé pour la recherche
+    # Création de l'index inversé (avec liste de mots par doc)
     index = creer_index(documents_tokens)
     
     while True:
@@ -67,9 +64,7 @@ def main():
             afficher_resultats_recherche_docs(docs_trouves)
             
             # Recherche des lignes contenant le mot clé
-            resultats_lignes = recherche_mot_dans_contenu(
-                {nom: contenu.splitlines() for nom, contenu in documents_raw}, mot_cle
-            )
+            resultats_lignes = recherche_mot_dans_contenu(documents_lines, mot_cle)
             afficher_resultats_recherche_lignes(resultats_lignes)
         
         elif choix == '2':
